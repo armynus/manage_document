@@ -60,7 +60,7 @@
                         <form class="form-horizontal" id="form-filter" action="{{route('view_history_post_user')}}" method="POST">
                             @csrf
                             <div class="card-header py-3">
-                                <h5 class="m-0 font-weight-bold text-primary">Lọc thông báo để xem chi tiết</h5>
+                                <h5 class="m-0 font-weight-bold text-primary">Lọc Thông Báo Theo Năm</h5>
                             </div>  
                         <div class="card-body"> 
                             <div class="">
@@ -77,37 +77,13 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="mt-3">
-                                <select class="form-control" id="quarter" name="quarter" value="{{$quarter}}">
-                                    <option value="">Chọn Quý</option>
-                                    @if($quarter == 1)
-                                        <option value="1" selected>Quý 1</option>
-                                    @else
-                                        <option value="1">Quý 1</option>
-                                    @endif
-                                    @if($quarter == 2)
-                                        <option value="2" selected>Quý 2</option>
-                                    @else
-                                        <option value="2">Quý 2</option>
-                                    @endif
-                                    @if($quarter == 3)
-                                        <option value="3" selected>Quý 3</option>
-                                    @else
-                                        <option value="3">Quý 3</option>
-                                    @endif
-                                    @if($quarter == 4)
-                                        <option value="4" selected>Quý 4</option>
-                                    @else
-                                        <option value="4">Quý 4</option>
-                                    @endif
-                                </select>
-                            </div>
+                           
                         <div class="mt-3">
-                            <button type="submit" class="form-control btn btn-primary">Lọc</button>
+                            <button type="submit" class="form-control btn btn-primary">Lọc Thông Báo</button>
                         </div>
                         </form>
                         <div class="card-header py-3">
-                                <h5 class="m-0 font-weight-bold text-primary">Quý {{$quarter}} năm {{$year}} có {{$count_data}} thông báo</h5>
+                                <h5 class="m-0 font-weight-bold text-primary">Năm {{$year}} có {{$count_data}} thông báo</h5>
                         </div>  
                         <div class="card-body"> 
                             <div class="table-responsive">
@@ -162,7 +138,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp</span>
                     </div>
                 </div>
             </footer>
@@ -200,9 +176,8 @@
     <!-- Page level custom scripts -->
     <script src="{{asset('js/demo/datatables-demo.js')}}"></script>
     <!-- include jQuery validate library -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="{{asset('js/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js')}}" type="text/javascript"></script>
     <!-- include Ajax  library -->
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
     
 </script>

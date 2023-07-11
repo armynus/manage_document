@@ -50,12 +50,12 @@
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
                     aria-expanded="true" aria-controls="collapsePages">
                     <i class="fas fa-fw fa-folder"></i>
-                    <span>Tài liệu </span>
+                    <span>Quản lý văn bản </span>
                 </a>
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                    
-                        <a class="collapse-item" href="{{route('filter_document_admin')}}">Thống kê tài liệu</a>
+                        <a class="collapse-item" href="{{route('filter_document_admin')}}">Thống kê văn bản</a>
                         <a class="collapse-item" href="{{route('history_post')}}">Lịch sử đăng tải</a>
                         
                     </div>

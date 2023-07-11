@@ -10,10 +10,11 @@
     <!-- Custom styles for this page -->
     <link rel="shortcut icon" type="image/png" href="{{asset('hp-logo.png')}}"/>
     <link href="{{asset('vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet" >
-    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.min.js"></script>
-	<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js" type="text/javascript"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{asset('js/jquery-3.2.1.min.js')}}"></script>
+    <script src="{{asset('js/jquery.validate.min.js')}}" type="text/javascript"></script>
+    <script src="{{asset('js/sweetalert.min.js')}}"></script>
+    <script src="{{asset('js/ajax/libs/jquery/3.6.0/jquery.min.js')}}"></script>
+    <script src="{{asset('js/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js')}}" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="{{asset('css/sweetalert.css')}}">
     
     <input type = "hidden" name = "_token" value = '<?php echo csrf_token(); ?>'>

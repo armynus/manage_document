@@ -61,7 +61,7 @@
                         <form class="form-horizontal" id="form-filter" action="{{route('view_filter_document')}}" method="POST">
                             @csrf
                             <div class="card-header py-3">
-                                <h5 class="m-0 font-weight-bold text-primary">Chọn Quý & Năm Của Tài Liệu</h5>
+                                <h5 class="m-0 font-weight-bold text-primary">Lọc Văn Bản Theo Năm & Thể Loại</h5>
                             </div>  
                         <div class="card-body"> 
                             <div class="">
@@ -72,18 +72,17 @@
                                     @endforeach
                                 </select>
                             </div>
+                            
                             <div class="mt-3">
-                                <select class="form-control" id="quarter" name="quarter" >
-                                    <option value="">Chọn Quý</option>
-                                    <option value="1">Quý 1</option>
-                                    <option value="2">Quý 2</option>
-                                    <option value="3">Quý 3</option>
-                                    <option value="4">Quý 4</option>
+                                <select class="form-control" id="category_id" name="category_id" >
+                                    @foreach($categorys as $d)
+                                        <option value="{{$d->id}}">{{$d->category_name}}</option>
+                                    @endforeach
                                 </select>
-                            </div>
+                            <div>
                         </div>
                         <div class="mt-3">
-                            <button type="submit" class="form-control btn btn-primary">Tìm Kiếm</button>
+                            <button type="submit" class="form-control btn btn-primary">Lọc Văn Bản</button>
                         </div>
                         </form>
                         <div class="card-header py-3">
@@ -94,9 +93,8 @@
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>Số đến</th>
+                                            <th>Thể loại</th>
                                             <th>Ngày đăng</th>
-                                            <th>Tên cơ quan gửi đến</th>
                                             <th>Số & ký hiệu văn bản</th>
                                             <th>Ngày văn bản</th>
                                             <th>Tên loại và trích yếu nội dung</th>
@@ -107,9 +105,8 @@
                                     </thead>
                                     <tfoot>
                                         <tr>
-                                            <th>Số đến</th>
+                                            <th>Thể loại</th>
                                             <th>Ngày đăng</th>
-                                            <th>Tên cơ quan gửi đến</th>
                                             <th>Số & ký hiệu văn bản</th>
                                             <th>Ngày văn bản</th>
                                             <th>Tên loại và trích yếu nội dung</th>
@@ -121,11 +118,12 @@
                                         @foreach($data as $item)
                                         <tr>
                                             
-                                            <td>{{$item->id}} </td>
+                  
+                                            <td>{{$item->category_name}} </td>
                                             <td>
                                                 {{date('d-m-Y', strtotime($item->created_at))}}
                                             </td>
-                                            <td>{{$item->department_send}}</td>
+                               
                                             <td>
                                                 <a href="{{route('detail_document', $item->id)}}">{{$item->document_number}}</a>
                                             </td>
@@ -143,6 +141,7 @@
                                                         </svg>
                                                     </button>
                                                 </a>
+                                                @if($item->document_file != '')
                                                 <a href="{{route('download_document', $item->id)}}" class="btn btn-large pull-right">
                                                     <button type="button" class="btn btn-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-down-fill" viewBox="0 0 16 16">
@@ -150,6 +149,8 @@
                                                         </svg>
                                                     </button>
                                                 </a>
+                                                @endif
+
                                             </td>
                                         </tr>
                                         @endforeach
@@ -169,7 +170,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                    <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp</span>
                     </div>
                 </div>
             </footer>
@@ -207,27 +208,20 @@
     <!-- Page level custom scripts -->
     <script src="{{asset('js/demo/datatables-demo.js')}}"></script>
     <!-- include jQuery validate library -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="{{asset('js/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js')}}" type="text/javascript"></script>
     <!-- include Ajax  library -->
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
 $("#form-filter").validate({
     rules: {
         "year": {
             required: true,
         },
-		"quarter": {
-			required: true,
-		},
 	},
     messages: {
         "year": {
             required: "Chọn Năm Của Tài Liệu",
         },
-        "quarter": {
-            required: "Chọn Quý Của Tài Liệu",
- 
-        },
+
     },
     submitHandler: function(form) {
         $(form).submit();

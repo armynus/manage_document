@@ -28,13 +28,15 @@ Route::group([
         Route::POST('delete_document_admin', [AdminController::class, 'delete_document_admin'])->name('delete_document_admin');
         Route::POST('delete_detaildocument_admin', [AdminController::class, 'delete_detaildocument_admin'])->name('delete_detaildocument_admin');
         Route::get('edit_document_admin/{id}', [AdminController::class, 'edit_document_admin'])->name('edit_document_admin');
-        Route::post('edits_document_admin', [AdminController::class, 'edits_mydocument_admin'])->name('edits_mydocument_admin');
+        Route::post('edits_document_admin', [AdminController::class, 'edits_document_admin'])->name('edits_document_admin');
         Route::get('view_detail_document_admin', [AdminController::class, 'view_detail_document_admin'])->name('view_detail_document_admin');
         Route::get('detail_document_admin/{document_id}', [AdminController::class, 'detail_document_admin'])->name('detail_document_admin');
         Route::get('history_post', [AdminController::class, 'history_post'])->name('history_post');
         Route::POST('view_history_post', [AdminController::class, 'view_history_post'])->name('view_history_post');
         Route::POST('delete_notifi_admin', [AdminController::class, 'delete_notifi_admin'])->name('delete_notifi_admin');
         Route::GET('search_admin', [AdminController::class, 'search_admin'])->name('search_admin');
+        Route::GET('change_password_ad/{admin_id}', [AdminController::class, 'change_password_ad'])->name('change_password_ad');
+        Route::POST('change_password_admin', [AdminController::class, 'change_password_admin'])->name('change_password_admin');
 
         // Route::get('download_document/{id}', [UserController::class, 'download_document'])->name('download_document');
         // Route::get('word_export/{id}', [UserController::class, 'word_export'])->name('word_export');
@@ -55,6 +57,7 @@ Route::group([
         Route::post('posts_document', [UserController::class, 'posts_document'])->name('posts_document');
         
         Route::get('manage_mydocument', [UserController::class, 'manage_mydocument'])->name('manage_mydocument');
+        Route::POST('view_filter_mydocument', [UserController::class, 'view_filter_mydocument'])->name('manage_mydocument/view_filter_mydocument');
         Route::get('edit_mydocument/{id}', [UserController::class, 'edit_mydocument'])->name('edit_mydocument');
         Route::post('edits_mydocument', [UserController::class, 'edits_mydocument'])->name('edits_mydocument');
         Route::post('delete_mydocument', [UserController::class, 'delete_mydocument'])->name('delete_mydocument');
@@ -66,11 +69,13 @@ Route::group([
         Route::get('history_post_user', [UserController::class, 'history_post_user'])->name('history_post_user');
         Route::POST('view_history_post_user', [UserController::class, 'view_history_post_user'])->name('view_history_post_user');
         Route::GET('search', [UserController::class, 'search'])->name('search');
-
+        Route::GET('change_password_us/{user_id}', [UserController::class, 'change_password_us'])->name('change_password_us');
+        Route::POST('change_password_user', [UserController::class, 'change_password_user'])->name('change_password_user');
 }); 
 Route::group([
     'middleware' => PublicFeature::class],function(){
         Route::get('download_document/{id}', [UserController::class, 'download_document'])->name('download_document');
         Route::get('word_export/{id}', [UserController::class, 'word_export'])->name('word_export');
-            
+        Route::get('export_documents_excel/{year}/{category_id}', [UserController::class, 'export_documents_excel'])->name('export_documents_excel');
+
 }); 

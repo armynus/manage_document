@@ -11,12 +11,15 @@ class Documents extends Model
     public $timestamps = true;
     protected $table = 'documents';
     public $fillable = [
+        'stt',
         'user_id',
+        'category_id',
         'department_send',
         'document_number',
         'document_time',
-        'document_name',
+        'document_content',
         'receiver',
+        'signer',
         'document_file',
     ];
 }

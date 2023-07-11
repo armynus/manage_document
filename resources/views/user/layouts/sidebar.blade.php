@@ -30,14 +30,14 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{route('filter_document')}}">
                     <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Thống kê tài liệu</span></a>
+                    <span>Thống kê văn bản</span></a>
             </li>
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{route('post_document')}}" 
                     aria-expanded="true" aria-controls="collapsePages">
                     <i class="fas fa-fw fa-folder"></i>
-                    <span>Đăng tải tài liệu</span>
+                    <span>Đăng tải văn bản</span>
                 </a>
                 
             </li>
@@ -46,7 +46,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{route('manage_mydocument')}}">
                     <i class="fas fa-fw fa-table"></i>
-                    <span>Tài liệu của tôi</span></a>
+                    <span>Văn bản của tôi</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{route('history_post_user')}}">

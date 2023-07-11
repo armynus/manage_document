@@ -61,16 +61,37 @@
                                 <div class="text-center">
                                     <h1 class="h4 text-gray-900 mb-4"><b>Chi Tiết Văn Bản</b></h1>
                                 </div>
-
-                                    <div class="form-group row" >
-                                        <div class="col-sm-3 mb-3 mb-sm-0">
-                                            <p class="text-center">Số đến:</p>
+                                    @if($data->category_id == 1)
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Thể loại:</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="id" value=" Văn bản đến" disabled style="background-color: white"> 
+                                            </div>
                                         </div>
-                                        <div class="col-sm-9" style="flex-wrap: wrap;">
-                                            <input type="text" class="form-control form-control-user "
-                                                id="" placeholder=""  name="id" value="{{$data->id}} " disabled style="background-color: white"> 
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Số đến:</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="id" value="{{$data->stt}} " disabled style="background-color: white"> 
+                                            </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Thể loại:</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="id" value="Văn bản đi " disabled style="background-color: white"> 
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
                                     <div class="form-group row" >
                                         <div class="col-sm-3 mb-3 mb-sm-0">
                                             <p class="text-center">Người đăng:</p>
@@ -102,24 +123,6 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="form-group row" >
-                                        <div class="col-sm-3 mb-3 mb-sm-0">
-                                            <p class="text-center">Tên cơ quan gửi đến:</p>
-                                        </div>
-                                        <div class="col-sm-9" style="flex-wrap: wrap;">
-                                            <input type="text" class="form-control form-control-user "
-                                                id="" placeholder=""  name="department_send" value="{{$data->department_send}} " disabled style="background-color: white"> 
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-sm-3 mb-3 mb-sm-0">
-                                            <p class="text-center">Số & ký hiệu văn bản:</p>
-                                        </div>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control form-control-user"
-                                                id="" placeholder=""  name="document_number" value="{{$data->document_number}}" disabled style="background-color: white">
-                                        </div>
-                                    </div>
                                     <div class="form-group row">
                                         <div class="col-sm-3 mb-3 mb-sm-0">
                                             <p class="text-center">Ngày, tháng văn bản:</p>
@@ -130,6 +133,37 @@
                                             </span>
                                         </div>
                                     </div>
+                                    @if($data->category_id == 1)
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Tên cơ quan gửi đến:</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="department_send" value="{{$data->department_send}} " disabled style="background-color: white"> 
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <div class="form-group row">
+                                        <div class="col-sm-3 mb-3 mb-sm-0">
+                                            <p class="text-center">Số & ký hiệu văn bản:</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-user"
+                                                id="" placeholder=""  name="document_number" value="{{$data->document_number}}" disabled style="background-color: white">
+                                        </div>
+                                    </div>
+                                    @if($data->category_id == 2)
+                                        <div class="form-group row">
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Người ký văn bản:</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control form-control-user"
+                                                    id="" placeholder=""  name="document_number" value="{{$data->signer}}" disabled style="background-color: white">
+                                            </div>
+                                        </div>
+                                    @endif
                                     <div class="form-group row">
                                         <div class="col-sm-3 mb-3 mb-sm-0">
                                             <p class="text-center">Tên loại và trích yếu nội dung:</p>
@@ -152,8 +186,13 @@
                                             <p class="text-center">File đăng tải:</p>
                                         </div>
                                         <div class="col-sm-9">
+                                            @if($data->document_file == null)
+                                            <input type="text" class="form-control form-control-user"
+                                                id="" placeholder=""  name="receiver"  value="Chưa có đăng tải file" disabled style="background-color: white"> 
+                                            @else
                                             <input type="text" class="form-control form-control-user"
                                                 id="" placeholder=""  name="receiver"  value="{{$data->document_file}}" disabled style="background-color: white"> 
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="form-group row">
@@ -168,7 +207,8 @@
                                                         <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
                                                     </svg>
                                                 </button>
-                                            </a> 
+                                            </a>
+                                            @if($data->document_file != null)
                                             <a href="{{route('download_document', $data->id)}}" class="btn btn-large pull-right">
                                                 <button type="button" class="btn btn-primary">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-cloud-arrow-down-fill" viewBox="0 0 16 16">
@@ -176,6 +216,8 @@
                                                     </svg>
                                                 </button>
                                             </a>
+                                            @endif
+                                            
                                             @if($user_id == $data->user_id)
                                                 <a href="{{route('edit_mydocument', $data->id)}}" class="btn btn-large pull-right">
                                                     <span type="button" class="btn btn-primary">
@@ -210,7 +252,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                    <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp</span>
                     </div>
                 </div>
             </footer>
@@ -249,7 +291,7 @@
     <!-- Page level custom scripts -->
     <script src="{{asset('js/demo/datatables-demo.js')}}"></script>
     <!-- include jQuery validate library -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="{{asset('js/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js')}}" type="text/javascript"></script>
 
     <script>
     $(document).ready(function(){

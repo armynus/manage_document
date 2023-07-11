@@ -141,7 +141,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp 2023</span>
+                        <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp </span>
                     </div>
                 </div>
             </footer>

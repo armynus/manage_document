@@ -6,14 +6,18 @@ use Illuminate\Http\Request;
 use Validate;
 use App\Models\Users;
 use App\Models\Documents;
+use App\Models\CategoryDocument;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Console\View\Components\Alert;
 use PhpOffice\PhpWord\TemplateProcessor;
+use PhpOffice\PhpWord\Shared\ZipArchive;
 use Pusher\Pusher;
 use Session;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DocumentsExport;
 class UserController extends Controller
 {
     public function index(){
@@ -26,30 +30,66 @@ class UserController extends Controller
         return view('user.index',compact('data','user_id','data_count','user_count','user_lock','noti_count'));
     }
     public function post_document(){
+        
         $user_id=Session::get('user_id');
         $user_name=Session::get('user_name');
+        $category=DB::table('category_document')->select('id','category_name')->get();
        
-        return view('user.post_document',compact('user_id','user_name',));
+        return view('user.post_document',compact('user_id','user_name','category'));
     }
     public function posts_document(Request $request){
-        $data=array();
-        $data['user_id']=$request->user_id;
-        $data['department_send']=$request->department_send;
-        $data['document_number']=$request->document_number;
-        $data['document_time']=$request->document_time;
-        $data['document_content']=$request->document_content;
-        $data['receiver']=$request->receiver;
-        $save_file= $request->file('document_file')->storeAs('public/document_folder', $request->file('document_file')->getClientOriginalName());
-        $data['document_file']=$request->document_file->getClientOriginalName();
-        $data['created_at']=date('Y-m-d H:i:s');
-        $data['updated_at']=date('Y-m-d H:i:s');
+        if($request->category_id==1){
+            $data=array();
+            $data['stt']=$request->stt;
+            $data['user_id']=$request->user_id;
+            $data['department_send']=$request->department_send;
+            $data['document_number']=$request->document_number;
+            $data['category_id']=$request->category_id;
+            $data['document_time']=$request->document_time;
+            $data['document_content']=$request->document_content;
+            $data['receiver']=$request->receiver;
+            $data['signer']=$request->signer;
+            $data['created_at']=date('Y-m-d H:i:s');
+            $data['updated_at']=date('Y-m-d H:i:s');
     
+            $document_id=Documents::insertGetId($data);
+
+            // them vao bang notification
+            $notifi = array();
+            $notifi['document_id']=$document_id;
+            $notifi['user_id']=$request->user_id;
+            $notifi['user_post']=$request->user_name;
+            $notifi['document_number']=$request->document_number;
+            $notifi['status']=0; // 0: chua doc, 1: da doc, 2: da xoa
+            $notifi['created_at']=date('Y-m-d H:i:s');
+            $notifi['updated_at']=date('Y-m-d H:i:s');
+            $notifi_id=DB::table('notification')->insert($notifi);
+            
+            Session::flash('document_id',$document_id);
+            return redirect()->back()->with('message','Thêm thành công') ;
+        }
         $document= Documents::select('document_file')->get();
         foreach ($document as $key => $value) {
             if ($request->file('document_file')->getClientOriginalName() == $value->document_file) {
                 return redirect()->back()->with('error','File đã tồn tại, vui lòng chọn file khác hoặc đổi tên file') ;
             }
         }
+        $data=array();
+        $data['stt']=$request->stt;
+        $data['user_id']=$request->user_id;
+        $data['department_send']=$request->department_send;
+        $data['document_number']=$request->document_number;
+        $data['category_id']=$request->category_id;
+        $data['document_time']=$request->document_time;
+        $data['document_content']=$request->document_content;
+        $data['receiver']=$request->receiver;
+        $data['signer']=$request->signer;
+        // dd($request->file('document_file'));
+        $save_file= $request->file('document_file')->storeAs('public/document_folder', $request->file('document_file')->getClientOriginalName());
+        $data['document_file']=$request->document_file->getClientOriginalName();
+        $data['created_at']=date('Y-m-d H:i:s');
+        $data['updated_at']=date('Y-m-d H:i:s');
+    
         $document_id=Documents::insertGetId($data);
 
         // them vao bang notification
@@ -64,28 +104,32 @@ class UserController extends Controller
         $notifi_id=DB::table('notification')->insert($notifi);
 
         // pusher
-        $data_pusher = array();
-        $data_pusher['user_post'] = $request->user_name;
-        $data_pusher['message'] = $data_pusher['user_post'] . ' vừa đăng một văn bản mới';
-        $options = array(
-            'cluster' => 'ap1',
-            'encrypted' => true
-        );
+        // $data_pusher = array();
+        // $data_pusher['user_post'] = $request->user_name;
+        // $data_pusher['message'] = $data_pusher['user_post'] . ' vừa đăng một văn bản mới';
+        // $options = array(
+        //     'cluster' => 'ap1',
+        //     'encrypted' => true
+        // );
 
-        $pusher = new Pusher(
-            '2247a9ca0f5a2d5d09db',
-            'b60db7679dd5124a431a',
-            '1605770',
-            $options
-        );
+        // $pusher = new Pusher(
+        //     '2247a9ca0f5a2d5d09db',
+        //     'b60db7679dd5124a431a',
+        //     '1605770',
+        //     $options
+        // );
 
-        $pusher->trigger('NotificationNewDocument', 'notification-new-document', $data_pusher);
+        // $pusher->trigger('NotificationNewDocument', 'notification-new-document', $data_pusher);
+        Session::flash('document_id',$document_id);
         return redirect()->back()->with('message','Thêm thành công') ;
     }
+   
     public function download_document($id){
         $data=Documents::where('id',$id)->first();
-        
-        $file_path = public_path('storage/document_folder/'.$data->document_file);
+        if ($data->document_file == null) {
+            return redirect()->back()->with('error','File không tồn tại') ;
+        }
+        $file_path = storage_path('app/public/document_folder/'.$data->document_file);
         return response()->download($file_path);
     }
     public function word_export($id){
@@ -100,25 +144,32 @@ class UserController extends Controller
         $templateProcessor->setValue('department_send', $data->department_send);
         $templateProcessor->setValue('document_number', $data->document_number);
         $templateProcessor->setValue('document_content', $data->document_content);
+        $templateProcessor->setValue('receiver', $data->receiver);
         $templateProcessor->setValue('dd', $dd);
         $templateProcessor->setValue('mm', $mm);
         $templateProcessor->setValue('yy', $yy);
         $templateProcessor->setValue('d', $d);
         $templateProcessor->setValue('m', $m);
         $templateProcessor->setValue('y', $y);
-        $templateProcessor->setValue('document_content', $data->document_content);
-        $templateProcessor->setValue('receiver', $data->receiver);
         
-        $filename = 'Phieu Trinh Van Ban';
+        $filename = 'Phieu Trinh Van Ban '.$data->stt.'';
        
         $templateProcessor->saveAs($filename.'.docx');
         return response()->download($filename.'.docx')->deleteFileAfterSend(true);
     }
     public function manage_mydocument(){
         $user_id=Session::get('user_id');
-        $data=Documents::where('user_id',$user_id)->get();
+        $data = DB::table('documents')
+        ->where('user_id',$user_id)
+        ->join('category_document', 'documents.category_id', '=', 'category_document.id')
+        ->select('documents.*', 'category_document.category_name')
+        ->orderBy('documents.id','ASC')
+        ->get();
         
-        return view('user.mydocument',compact('data'));
+        $count_data = count($data);
+        $years= Documents::select(DB::raw('YEAR(document_time) as year'))->distinct()->get();
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        return view('user.mydocument',compact('data','count_data','categorys','years'));
     }
     public function edit_mydocument($id){
         $user_id=Session::get('user_id');
@@ -132,32 +183,76 @@ class UserController extends Controller
     public function edits_mydocument(Request $request){
         $document_id=$request->id;
         $document=Documents::where('id',$document_id)->first();
-        $document_file=$document->document_file;
-        $delete_file=unlink('storage/document_folder/'.$document_file);
+        $notifi=DB::table('notification') ->where('document_id',$document_id)->first();
+        $data_notifi=array();
+        $data_notifi['document_number']=$request->document_number;
+        if ($notifi!=null) {
+            DB::table('notification')->where('document_id',$request->id)->update($data_notifi);
+        }
+        if ($document->category_id==1){
+            if ($document->document_file==null) {
+                $data= array();
+                $data['stt']=$request->stt;
+                $data['department_send']=$request->department_send;
+                $data['document_number']=$request->document_number;
+                $data['document_time']=$request->document_time;
+                $data['document_content']=$request->document_content;
+                if($request->hasFile('document_file1')){
+                    $save_file= $request->file('document_file1')->storeAs('public/document_folder', $request->file('document_file1')->getClientOriginalName());
+                    $data['document_file']=$request->document_file1->getClientOriginalName();
+                }
+                $data['receiver']=$request->receiver;
+                $data['updated_at']=date('Y-m-d H:i:s');
+                Session::flash('document_id',$document_id);
+                Documents::where('id',$request->id)->update($data);
+                return redirect()->back()->with('message','Sửa thành công') ;
+            }else{
+                $data= array();
+                $data['stt']=$request->stt;
+                $data['department_send']=$request->department_send;
+                $data['document_number']=$request->document_number;
+                $data['document_time']=$request->document_time;
+                $data['document_content']=$request->document_content;   
+                if($request->hasFile('document_file1')){
+                    $delete_file=unlink('storage/document_folder/'.$document->document_file);
+                    $save_file= $request->file('document_file1')->storeAs('public/document_folder', $request->file('document_file1')->getClientOriginalName());
+                    $data['document_file']=$request->document_file1->getClientOriginalName();
+                }
+                $data['receiver']=$request->receiver;
+                $data['updated_at']=date('Y-m-d H:i:s');
+                Session::flash('document_id',$document_id);
+                Documents::where('id',$request->id)->update($data);
+                return redirect()->back()->with('message','Sửa thành công') ;
+            }
+        }
+        if($document->document_file != null){
+            $delete_file=unlink('storage/document_folder/'.$document->document_file);
+        }
         $data= array();
-        $data['department_send']=$request->department_send;
         $data['document_number']=$request->document_number;
+        $data['signer']=$request->signer;
         $data['document_time']=$request->document_time;
         $data['document_content']=$request->document_content;
         $save_file= $request->file('document_file')->storeAs('public/document_folder', $request->file('document_file')->getClientOriginalName());
         $data['document_file']=$request->document_file->getClientOriginalName();
         $data['receiver']=$request->receiver;
         $data['updated_at']=date('Y-m-d H:i:s');
+        Session::flash('document_id',$document_id);
         Documents::where('id',$request->id)->update($data);
         return redirect()->back()->with('message','Sửa thành công') ;
     }
     public function delete_mydocument(Request $request){
         $document_id=$request->id;
         $document=Documents::where('id',$document_id)->first();
-        $document_file=$document->document_file;
-        if((file_exists('storage/document_folder/'.$document_file))==true){
-            Notification::where('document_id',$request->id)->delete();
-            $delete_file=unlink('storage/document_folder/'.$document_file);
-            Documents::where('id',$request->id)->delete();
+        if ($document->document_file==null) {
+            Notification::where('document_id',$document_id)->delete();
+            Documents::where('id',$document_id)->delete();
             return response()->json([
                 'status' => true
             ]);
         }else{
+            
+            $delete_file=unlink('storage/document_folder/'.$document->document_file);
             Notification::where('document_id',$request->id)->delete();
             Documents::where('id',$request->id)->delete();
             return response()->json([
@@ -166,19 +261,19 @@ class UserController extends Controller
         }
     }
     public function delete_detaildocument_user(Request $request){
-        $id=$request->id;
-        $document=Documents::where('id',$id)->first();
-        $document_file=$document->document_file;
-        if((file_exists('storage/document_folder/'.$document_file))==true){
-            Notification::where('document_id',$id)->delete();
-            $delete_file=unlink('storage/document_folder/'.$document_file);
-            Documents::where('id',$id)->delete();
+        $document_id=$request->id;
+        $document=Documents::where('id',$document_id)->first();
+        if ($document->document_file==null) {
+            Notification::where('document_id',$document_id)->delete();
+            Documents::where('id',$document_id)->delete();
             return response()->json([
                 'status' => true
             ]);
         }else{
-            Notification::where('document_id',$id)->delete();
-            Documents::where('id',$id)->delete();
+            
+            $delete_file=unlink('storage/document_folder/'.$document->document_file);
+            Notification::where('document_id',$request->id)->delete();
+            Documents::where('id',$request->id)->delete();
             return response()->json([
                 'status' => true
             ]);
@@ -187,32 +282,58 @@ class UserController extends Controller
     public function filter_document(){
         $user_id=Session::get('user_id');
         $years= Documents::select(DB::raw('YEAR(document_time) as year'))->distinct()->get();
-        $data= Documents:: orderBy('id','DESC')
-        ->limit(100)
+        $data = DB::table('documents')
+        ->join('category_document', 'documents.category_id', '=', 'category_document.id')
+        ->select('documents.*', 'category_document.category_name')
+        ->orderBy('documents.id','DESC')
+        ->limit(200)
         ->get();
+        
         $count_data = count($data);
-        return view('user.filter_document',compact('years','data','count_data'));
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        
+        return view('user.filter_document',compact('years','data','count_data','categorys'));
     }
     public function view_filter_document(Request $request){
         $user_id=Session::get('user_id');
         $year=$request->year;
-        $quarter=$request->quarter;
+        $category_id=$request->category_id;
+        $data = DB::table('documents')
+            ->join('category_document', 'documents.category_id', '=', 'category_document.id')
+            ->select('documents.*', 'category_document.category_name')
+            ->orderBy('documents.id','ASC')
+            ->where('category_id', $category_id)
+            ->whereYear('document_time', $year)
+            ->get();
         
-        if ($quarter==1) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 1)->whereMonth('document_time', '<=', 3)->get();
-        }
-        if ($quarter==2) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 4)->whereMonth('document_time', '<=', 6)->get();
-        }
-        if ($quarter==3) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 7)->whereMonth('document_time', '<=', 9)->get();
-        }
-        if ($quarter==4) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 10)->whereMonth('document_time', '<=', 12)->get();
-        }
         $years= Documents::select(DB::raw('YEAR(document_time) as year'))->distinct()->get();
+        $category=DB::table('category_document')->select('id','category_name')->where('id',$category_id) ->first();
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        // dd($category);
+
         $count_data = count($data);
-        return view('user.result_document',compact('user_id','data','years','year','quarter','count_data'));
+        return view('user.view_filter_document',compact('user_id','data','years','year','count_data','category','categorys'));
+    }
+    public function view_filter_mydocument(Request $request){
+        $user_id=Session::get('user_id');
+        $year=$request->year;
+        $category_id=$request->category_id;
+        $data = DB::table('documents')
+            ->join('category_document', 'documents.category_id', '=', 'category_document.id')
+            ->select('documents.*', 'category_document.category_name')
+            ->orderBy('documents.id','ASC')
+            ->where('category_id', $category_id)
+            ->where('user_id', $user_id)
+            ->whereYear('document_time', $year)
+            ->get();
+        
+        $years= Documents::select(DB::raw('YEAR(document_time) as year'))->distinct()->get();
+        $category=DB::table('category_document')->select('id','category_name')->where('id',$category_id) ->first();
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        // dd($category);
+        $count_data = count($data);
+
+        return view('user.view_filter_mydocument',compact('user_id','data','years','year','count_data','category','categorys'));
     }
     public function view_detail_document(){
         $user_id= Session::get('user_id');
@@ -239,35 +360,23 @@ class UserController extends Controller
             return redirect()->back()->with('error','Bạn chưa đăng nhập');
         }
         $data= Notification::orderBy('id', 'DESC')
-            ->limit(100)
+            ->limit(1000)
             ->get();
         
         $years= Notification::select(DB::raw('YEAR(created_at) as year'))->distinct()->get();
         $count_data = count($data);
-        
-        return view('user.history_post',compact('data','years','count_data'));
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        return view('user.history_post',compact('data','years','count_data','categorys'));
     }
     public function view_history_post_user(Request $request){
         $user_id=Session::get('user_id');
         $year=$request->year;
-        $quarter=$request->quarter;
-        
-        if ($quarter==1) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 1)->whereMonth('created_at', '<=', 3)->get();
-        }
-        if ($quarter==2) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 4)->whereMonth('created_at', '<=', 6)->get();
-        }
-        if ($quarter==3) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 7)->whereMonth('created_at', '<=', 9)->get();
-        }
-        if ($quarter==4) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 10)->whereMonth('created_at', '<=', 12)->get();
-        }
+        $data=Notification::whereYear('created_at', $year)->get();
+
         $years= Notification::select(DB::raw('YEAR(created_at) as year'))->distinct()->get();
         $count_data= $data->count();
         
-        return view('user.view_history_post',compact('user_id','data','years','year','quarter','count_data'));
+        return view('user.view_history_post',compact('user_id','data','years','year','count_data'));
     }
     public function search(Request $request){
         $user_id=Session::get('user_id');
@@ -277,5 +386,46 @@ class UserController extends Controller
         $data= $data1->merge($data2);
         $count_data = count($data);
         return view('user.search_user',compact('data','keyword','count_data'));
+    }
+    public function change_password_us($user_id){
+        $id=Session::get('user_id');
+        if($user_id != $id){
+            return redirect()->back()->with('error','Không đủ quyền truy cập');
+        }
+        $user=Users::where('id',$user_id)
+        ->select('id','email','name')
+        ->first();
+        return view('user.change_password_user',compact('user'));
+    }
+   
+    public function change_password_user(Request $request){
+        $password=$request->password;
+        $id=$request->user_id;
+        
+        $result= DB::table('users')
+        ->where('id', $id)
+        ->first();
+        
+        if(Hash::check($password, $result->password )){
+            $data=array();
+            $data['password']=Hash::make($request->newpassword);
+            Users::where('id',$id)->update($data);
+            return redirect()->back()->with('message','Đổi mật khẩu thành công') ;
+        }else{
+            return redirect()->back()->with('error','Mật khẩu hiện tại không đúng') ;
+        }
+    }
+    public function export_documents_excel( $year, $category_id){
+        // $docu=Documents::whereYear('document_time', $year)
+        //     ->where('category_id', $category_id)
+        //     ->orderBy('stt', 'asc')
+        //     ->get();
+        // dd($docu);
+        if($category_id==1){
+            return Excel::download(new DocumentsExport($year, $category_id), 'Sổ vb đến '.$year.'.xlsx');
+        }else{
+            return Excel::download(new DocumentsExport($year, $category_id), 'Sổ vb đi '.$year.'.xlsx');
+        }
+        return Excel::download(new DocumentsExport($year, $category_id), 'documents.xlsx');
     }
 }

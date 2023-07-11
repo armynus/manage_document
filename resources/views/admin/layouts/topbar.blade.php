@@ -93,14 +93,17 @@
                                 src="{{asset('user_icon.png')}}">
                         </a>
                         <!-- Dropdown - User Information -->
+                        @php
+                            $admin_id=Session::get('admin_id');
+                        @endphp
                         <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                             aria-labelledby="userDropdown">
-                            <!-- <a class="dropdown-item" href="#">
-                                <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                Activity Log
+                            <a class="dropdown-item" href="{{route('change_password_ad',$admin_id)}}">
+                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Đổi Mật Khẩu
                             </a>
                             <div class="dropdown-divider"></div> 
-                            -->
+                           
                             <a class="dropdown-item" href="{{route('logout_admin')}}" data-toggle="modal" data-target="#logoutModal">
                                 <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                 Đăng Xuất

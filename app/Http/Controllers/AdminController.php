@@ -99,47 +99,53 @@ class AdminController extends Controller
     public function filter_document_admin(){
         $admin_id=Session::get('admin_id');
         $years= Documents::select(DB::raw('YEAR(document_time) as year'))->distinct()->get();
-        $data= Documents:: orderBy('id','DESC')
-        ->limit(100)
-        ->get();;
-        $count_data = count($data);
+        $data = DB::table('documents')
+        ->join('category_document', 'documents.category_id', '=', 'category_document.id')
+        ->select('documents.*', 'category_document.category_name')
+        ->orderBy('documents.id','DESC')
+        ->limit(200)
+        ->get();
         
-        return view('admin.filter_document_admin',compact('years','data','admin_id','count_data'));
+        $count_data = count($data);
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        
+        return view('admin.filter_document_admin',compact('years','data','admin_id','count_data','categorys'));
     }
     public function view_filter_document_admin(Request $request){
         $admin_id=Session::get('admin_id');
         $year=$request->year;
         $quarter=$request->quarter;
+        $category_id=$request->category_id;
         
-        if ($quarter==1) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 1)->whereMonth('document_time', '<=', 3)->orderBy('id','DESC')->get();
-        }
-        if ($quarter==2) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 4)->whereMonth('document_time', '<=', 6)->orderBy('id','DESC')->get();
-        }
-        if ($quarter==3) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 7)->whereMonth('document_time', '<=', 9)->orderBy('id','DESC')->get();
-        }
-        if ($quarter==4) {
-            $data=Documents::whereYear('document_time', $year)->whereMonth('document_time', '>=', 10)->whereMonth('document_time', '<=', 12)->orderBy('id','DESC')->get();
-        }
-        $count_data = count($data);
+        $data = DB::table('documents')
+            ->join('category_document', 'documents.category_id', '=', 'category_document.id')
+            ->select('documents.*', 'category_document.category_name')
+            ->orderBy('documents.id','ASC')
+            ->where('category_id', $category_id)
+            ->whereYear('document_time', $year)
+            ->get();
+        
         $years= Documents::select(DB::raw('YEAR(document_time) as year'))->distinct()->get();
+        $category=DB::table('category_document')->select('id','category_name')->where('id',$category_id) ->first();
+        $categorys=DB::table('category_document')->select('id','category_name') ->get();
+        // dd($category);
 
-        return view('admin.result_document_admin',compact('admin_id','data','years','year','quarter','count_data'));
+        $count_data = count($data);
+
+        return view('admin.view_filter_document_admin',compact('admin_id','data','years','year','count_data','category','categorys'));
     }
     public function delete_document_admin(Request $request){
         $document_id=$request->id;
         $document=Documents::where('id',$document_id)->first();
-        $document_file=$document->document_file;
-        if((file_exists('storage/document_folder/'.$document_file))==true){
-            Notification::where('document_id',$request->id)->delete();
-            $delete_file=unlink('storage/document_folder/'.$document_file);
-            Documents::where('id',$request->id)->delete();
+        if ($document->document_file==null) {
+            Notification::where('document_id',$document_id)->delete();
+            Documents::where('id',$document_id)->delete();
             return response()->json([
                 'status' => true
             ]);
         }else{
+            
+            $delete_file=unlink('storage/document_folder/'.$document->document_file);
             Notification::where('document_id',$request->id)->delete();
             Documents::where('id',$request->id)->delete();
             return response()->json([
@@ -148,19 +154,19 @@ class AdminController extends Controller
         }
     }
     public function delete_detaildocument_admin(Request $request){
-        $id=$request->id;
-        $document=Documents::where('id',$id)->first();
-        $document_file=$document->document_file;
-        if((file_exists('storage/document_folder/'.$document_file))==true){
-            Notification::where('document_id',$id)->delete();
-            $delete_file=unlink('storage/document_folder/'.$document_file);
-            Documents::where('id',$id)->delete();
+        $document_id=$request->id;
+        $document=Documents::where('id',$document_id)->first();
+        if ($document->document_file==null) {
+            Notification::where('document_id',$document_id)->delete();
+            Documents::where('id',$document_id)->delete();
             return response()->json([
                 'status' => true
             ]);
         }else{
-            Notification::where('document_id',$id)->delete();
-            Documents::where('id',$id)->delete();
+            
+            $delete_file=unlink('storage/document_folder/'.$document->document_file);
+            Notification::where('document_id',$request->id)->delete();
+            Documents::where('id',$request->id)->delete();
             return response()->json([
                 'status' => true
             ]);
@@ -170,16 +176,59 @@ class AdminController extends Controller
         $admin_id=Session::get('admin_id');
         $data=Documents::where('id',$id)->first();
        
-        return view('admin.edit_document_admin',compact('data'));
+        return view('admin.edit_document_admin',compact('data','admin_id'));
     }
     public function edits_document_admin(Request $request){
         $document_id=$request->id;
         $document=Documents::where('id',$document_id)->first();
-        $document_file=$document->document_file;
-        $delete_file=unlink('storage/document_folder/'.$document_file);
+        $notifi=DB::table('notification') ->where('document_id',$document_id)->first();
+        $data_notifi=array();
+        $data_notifi['document_number']=$request->document_number;
+        if ($notifi!=null) {
+            DB::table('notification')->where('document_id',$request->id)->update($data_notifi);
+        }
+        if ($document->category_id==1){
+            if ($document->document_file==null) {
+                $data= array();
+                $data['stt']=$request->stt;
+                $data['department_send']=$request->department_send;
+                $data['document_number']=$request->document_number;
+                $data['document_time']=$request->document_time;
+                $data['document_content']=$request->document_content;
+                if($request->hasFile('document_file1')){
+                    $save_file= $request->file('document_file1')->storeAs('public/document_folder', $request->file('document_file1')->getClientOriginalName());
+                    $data['document_file']=$request->document_file1->getClientOriginalName();
+                }
+                $data['receiver']=$request->receiver;
+                $data['updated_at']=date('Y-m-d H:i:s');
+                Documents::where('id',$request->id)->update($data);
+                Session::flash('document_id',$document_id);
+                return redirect()->back()->with('message','Sửa thành công') ;
+            }else{
+                $data= array();
+                $data['stt']=$request->stt;
+                $data['department_send']=$request->department_send;
+                $data['document_number']=$request->document_number;
+                $data['document_time']=$request->document_time;
+                $data['document_content']=$request->document_content;   
+                if($request->hasFile('document_file1')){
+                    $delete_file=unlink('storage/document_folder/'.$document->document_file);
+                    $save_file= $request->file('document_file1')->storeAs('public/document_folder', $request->file('document_file1')->getClientOriginalName());
+                    $data['document_file']=$request->document_file1->getClientOriginalName();
+                }
+                $data['receiver']=$request->receiver;
+                $data['updated_at']=date('Y-m-d H:i:s');
+                Documents::where('id',$request->id)->update($data);                
+                Session::flash('document_id',$document_id);
+                return redirect()->back()->with('message','Sửa thành công') ;
+            }
+        }
+        if($document->document_file != null){
+            $delete_file=unlink('storage/document_folder/'.$document->document_file);
+        }
         $data= array();
-        $data['department_send']=$request->department_send;
         $data['document_number']=$request->document_number;
+        $data['signer']=$request->signer;
         $data['document_time']=$request->document_time;
         $data['document_content']=$request->document_content;
         $save_file= $request->file('document_file')->storeAs('public/document_folder', $request->file('document_file')->getClientOriginalName());
@@ -187,6 +236,7 @@ class AdminController extends Controller
         $data['receiver']=$request->receiver;
         $data['updated_at']=date('Y-m-d H:i:s');
         Documents::where('id',$request->id)->update($data);
+        Session::flash('document_id',$document_id);
         return redirect()->back()->with('message','Sửa thành công') ;
     }
     public function view_detail_document_admin(){
@@ -220,24 +270,12 @@ class AdminController extends Controller
     public function view_history_post(Request $request){
         $admin_id=Session::get('admin_id');
         $year=$request->year;
-        $quarter=$request->quarter;
         
-        if ($quarter==1) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 1)->whereMonth('created_at', '<=', 3)->get();
-        }
-        if ($quarter==2) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 4)->whereMonth('created_at', '<=', 6)->get();
-        }
-        if ($quarter==3) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 7)->whereMonth('created_at', '<=', 9)->get();
-        }
-        if ($quarter==4) {
-            $data=Notification::whereYear('created_at', $year)->whereMonth('created_at', '>=', 10)->whereMonth('created_at', '<=', 12)->get();
-        }
+        $data=Notification::whereYear('created_at', $year)->get();
         $years= Notification::select(DB::raw('YEAR(created_at) as year'))->distinct()->get();
         $count_data= $data->count();
         
-        return view('admin.view_history_post',compact('admin_id','data','years','year','quarter','count_data'));
+        return view('admin.view_history_post',compact('admin_id','data','years','year','count_data'));
     }
     public function delete_notifi_admin(Request $request){
         $notifi_id=$request->id;
@@ -255,5 +293,34 @@ class AdminController extends Controller
         $data= $data1->merge($data2);
         $count_data= $data->count();
         return view('admin.search_admin',compact('data','keyword','count_data'));
+    }
+    public function change_password_ad($admin_id){
+        $user_id=Session::get('admin_id');
+        if($user_id != $admin_id){
+            return redirect()->back()->with('error','Không đủ quyền truy cập');
+        }
+        $user=Users::where('id',$admin_id)
+        ->select('id','email','name')
+        ->first();
+        return view('admin.change_password_admin',compact('user'));
+    }
+   
+    public function change_password_admin(Request $request){
+        $password=$request->password;
+        $id=$request->user_id;
+        
+        $result= DB::table('users')
+        ->where('id', $id)
+        ->where('role_id',0)
+        ->first();
+        
+        if(Hash::check($password, $result->password )){
+            $data=array();
+            $data['password']=Hash::make($request->newpassword);
+            Users::where('id',$id)->update($data);
+            return redirect()->back()->with('message','Đổi mật khẩu thành công') ;
+        }else{
+            return redirect()->back()->with('error','Mật khẩu hiện tại không đúng') ;
+        }
     }
 }

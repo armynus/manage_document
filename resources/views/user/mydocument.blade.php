@@ -53,51 +53,77 @@
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Bảng danh sách tài liệu</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Văn bản tài liệu người dùng</h1>
                     
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
-                     
+                        <form class="form-horizontal" id="form-filter" action="{{route('manage_mydocument/view_filter_mydocument')}}" method="POST">
+                            @csrf
+                            <div class="card-header py-3">
+                                <h5 class="m-0 font-weight-bold text-primary">Chọn Năm & Thể Loại Của Tài Liệu</h5>
+                            </div>  
+                        <div class="card-body"> 
+                            <div class="">
+                                <select class="form-control" id="year" name="year" >
+                                    <option value="">Chọn Năm</option>
+                                    @foreach($years as $y)
+                                        <option value="{{$y->year}}">{{$y->year}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mt-3">
+                                <select class="form-control" id="category_id" name="category_id" >
+                                    @foreach($categorys as $d)
+                                        <option value="{{$d->id}}">{{$d->category_name}}</option>
+                                    @endforeach
+                                </select>
+                            <div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="form-control btn btn-primary">Lọc Văn Bản</button>
+                        </div>
+                        </form>
+                        <div class="card-header py-3">
+                                <h5 class="m-0 font-weight-bold text-primary">Bạn đã đăng {{$count_data}} văn bản tài liệu</h5>
+                        </div>
                         <div class="card-body"> 
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>Số đến</th>
+                                            <th>Thể loại</th>
                                             <th>Ngày đăng</th>
-                                            <th>Tên cơ quan gửi đến</th>
                                             <th>Số & ký hiệu văn bản</th>
                                             <th>Ngày văn bản</th>
                                             <th>Tên loại và trích yếu nội dung</th>
                                             <th>Đơn vị hoặc người nhận</th>
                                             <th>Chức năng</th>
-                                            <th>Cập nhật, xóa</th>
+                                            <th>Thao tác</th>
+
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
-                                            <th>Số đến</th>
+                                            <th>Thể loại</th>
                                             <th>Ngày đăng</th>
-                                            <th>Tên cơ quan gửi đến</th>
                                             <th>Số & ký hiệu văn bản</th>
                                             <th>Ngày văn bản</th>
                                             <th>Tên loại và trích yếu nội dung</th>
                                             <th>Đơn vị hoặc người nhận</th>
                                             <th>Chức năng</th>
-                                            <th>Cập nhật, xóa</th>
+                                            <th>Thao tác</th>
                                         </tr>
                                     </tfoot>
-                                    <form>
-                                        @csrf
                                     <tbody>
                                         @foreach($data as $item)
                                         <tr>
                                             
-                                            <td>{{$item->id}} </td>
+                  
+                                            <td>{{$item->category_name}} </td>
                                             <td>
                                                 {{date('d-m-Y', strtotime($item->created_at))}}
                                             </td>
-                                            <td>{{$item->department_send}}</td>
+                               
                                             <td>
                                                 <a href="{{route('detail_document', $item->id)}}">{{$item->document_number}}</a>
                                             </td>
@@ -115,6 +141,7 @@
                                                         </svg>
                                                     </button>
                                                 </a>
+                                                @if($item->document_file != '')
                                                 <a href="{{route('download_document', $item->id)}}" class="btn btn-large pull-right">
                                                     <button type="button" class="btn btn-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-down-fill" viewBox="0 0 16 16">
@@ -122,7 +149,9 @@
                                                         </svg>
                                                     </button>
                                                 </a>
+                                                @endif
                                             </td>
+                                            
                                             <td >
                                                 <a href="{{route('edit_mydocument', $item->id)}}" class="btn btn-large pull-right">
                                                     <span type="button" class="btn btn-primary">
@@ -145,7 +174,6 @@
                                         @endforeach
                                         @include('user.layouts.ajax_delete_docu')
                                     </tbody>
-                                    </form>
                                 </table>
                             </div>
                         </div>
@@ -161,7 +189,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp</span>
                     </div>
                 </div>
             </footer>
@@ -200,9 +228,8 @@
     <!-- Page level custom scripts -->
     <script src="{{asset('js/demo/datatables-demo.js')}}"></script>
     <!-- include jQuery validate library -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="{{asset('js/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js')}}" type="text/javascript"></script>
     <!-- include Ajax  library -->
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
 
 </body>

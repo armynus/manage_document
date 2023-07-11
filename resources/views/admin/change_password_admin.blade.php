@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Cập nhật nhân viên</title>
+    <title>Đổi mật khẩu</title>
 
     @include('user.layouts.head')
     
@@ -54,12 +54,12 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-4 text-gray-800">Cập Nhật Tài Khoản</h1>
+                    
                     <div class="row" style="justify-content: center;">
                         <div class="col-lg-8">
                             <div class="p-5">
                                 <div class="text-center">
-                                    <h1 class="h4 text-gray-900 mb-4">Cập nhật tài khoản nhân viên</h1>
+                                    <h1 class="h4 text-gray-900 mb-4">Đổi mật khẩu quản trị viên</h1>
                                 </div>
                                 @php
                                     $message = Session::get('message');
@@ -73,30 +73,34 @@
                                         Session::put('error',null);
                                     }
                                 @endphp
-                                <form class="user" action="{{route('edits_user')}}" method="POST" enctype="multipart/form-data" id="form_add_user">
+                                <form class="user" action="{{route('change_password_admin')}}" method="POST" enctype="multipart/form-data" id="form_add_user">
                                     @csrf
                                     <input type="hidden" name="user_id" value="{{$user->id}}">
                                     <div class="form-group">
                                         <input  class="form-control form-control-user" id="exampleInputEmail"
-                                            placeholder="Tên Nhân Viên" name="name" value="{{$user->name }}">
+                                            placeholder="Tên Nhân Viên" name="name" value="{{$user->name }}" disabled>
                                     </div>
                                     <div class="form-group">
                                         <input type="email" class="form-control form-control-user" id="exampleInputEmail"
-                                            placeholder="Địa Chỉ Email " name="email" value="{{$user->email }}">
+                                            placeholder="Địa Chỉ Email " name="email" value="{{$user->email }}" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="password" class="form-control form-control-user"
+                                                id="" placeholder="Nhập Mật Khẩu Hiện Tại"  name="password" >
                                     </div>
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
                                             <input type="password" class="form-control form-control-user"
-                                                id="exampleInputPassword" placeholder="Nhập Mật Khẩu"  name="password" >
+                                                id="exampleInputPassword" placeholder="Nhập Mật Khẩu Mới"  name="newpassword" >
                                         </div>
                                         <div class="col-sm-6">
                                             <input type="password" class="form-control form-control-user"
-                                                id="exampleRepeatPassword" placeholder="Nhập Lại Mật Khẩu"  name="repassword" >
+                                                id="exampleRepeatPassword" placeholder="Xác Nhận Mật Khẩu"  name="repassword" >
                                         </div>
                                     </div>
                                     
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
-                                        Cập Nhật
+                                        Đổi Mật Khẩu
                                     </button>
                                     
                                 </form>
@@ -166,6 +170,10 @@ $("#form_add_user").validate({
             required: true,
             email: true,
         },
+        "old_password": {
+            required: true,
+            minlength: 6,
+        },
         "password": {
             required: true,
             minlength: 6,
@@ -185,6 +193,10 @@ $("#form_add_user").validate({
         "email": {
             required: "Vui lòng nhập email nhân viên",
             email: "Vui lòng nhập đúng định dạng email",
+        },
+        "old_password": {
+            required: "Vui lòng nhập mật khẩu hiện tại",
+            minlength: "Mật khẩu phải có ít nhất 6 ký tự",
         },
         "password": {
             required: "Vui lòng nhập mật khẩu",

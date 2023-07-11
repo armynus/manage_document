@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notification', function (Blueprint $table) {
+        Schema::create('category_document', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('document_id')->constrained('documents');
-            $table->string('user_id');
-            $table->string('user_post');
-            $table->string('document_number');
-            $table->integer('status');
+            $table->string('category_name');
             $table->timestamps();
         });
     }

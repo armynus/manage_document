@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
+            $table->integer('stt')->nullable();
             $table->foreignId('user_id')->constrained('users');
-            $table->string('department_send');
+            $table->foreignId('category_id')->constrained('category_document');
+            $table->string('department_send')->nullable();
             $table->string('document_number');
+            $table->string('document_content');
             $table->date('document_time');
-            $table->string('document_name');
             $table->string('receiver');
-            $table->string('document_file');
+            $table->string('signer')->nullable();
+            $table->string('document_file')->nullable();
             $table->timestamps();
         });
     }

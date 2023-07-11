@@ -73,28 +73,72 @@
                                         Session::put('error',null);
                                     }
                                 @endphp
+                                @if(Session::has('document_id'))
+                                    <div class="alert alert-primary" role="alert"> In phiếu trình văn bản:
+                                        <a href="{{route('word_export', Session::get('document_id'))}}" class="btn btn-large pull-right">
+                                            <button type="button" class="btn btn-primary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-printer-fill" viewBox="0 0 16 16">
+                                                    <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+                                                    <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                                                </svg>
+                                            </button>
+                                        </a>
+                                    </div>
+
+                                @endif
                                 <form class="user" action="{{route('edits_mydocument')}} " method="POST" enctype="multipart/form-data" id="form_post_document">
                                     @csrf
                                     <input type="hidden" name="id" value="{{$data->id}}">
-                                    
-                                    <div class="form-group row" >
-                                        <div class="col-sm-3 mb-3 mb-sm-0">
-                                            <p class="text-center">Tên cơ quan gửi đến</p>
+                                    <input type="hidden" name="user_id" value="{{$data->user_id}}">
+
+                                    @if($data->category_id==1)
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Số đến</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="stt" value="{{$data->stt}}"> 
+                                            </div>
                                         </div>
-                                        <div class="col-sm-9" style="flex-wrap: wrap;">
-                                            <input type="text" class="form-control form-control-user "
-                                                id="" placeholder=""  name="department_send" value="{{$data->department_send}}"> 
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Tên cơ quan gửi đến</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="department_send" value="{{$data->department_send}}"> 
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-sm-3 mb-3 mb-sm-0">
-                                            <p class="text-center">Số & ký hiệu văn bản</p>
+                                        <div class="form-group row">
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Số & ký hiệu văn bản</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control form-control-user"
+                                                    id="" placeholder=""  name="document_number" value="{{$data->document_number}}">
+                                            </div>
                                         </div>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control form-control-user"
-                                                id="" placeholder=""  name="document_number" value="{{$data->document_number}}">
+                                    @elseif($data->category_id==2)
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Số văn bản</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="document_number" value="{{$data->document_number}}"> 
+                                            </div>
                                         </div>
-                                    </div>
+                                        <div class="form-group row" >
+                                            <div class="col-sm-3 mb-3 mb-sm-0">
+                                                <p class="text-center">Người ký văn bản</p>
+                                            </div>
+                                            <div class="col-sm-9" style="flex-wrap: wrap;">
+                                                <input type="text" class="form-control form-control-user "
+                                                    id="" placeholder=""  name="signer" value="{{$data->signer}}"> 
+                                            </div>
+                                        </div>
+                                    @endif
                                     <div class="form-group row">
                                         <div class="col-sm-3 mb-3 mb-sm-0">
                                             <p class="text-center">Ngày, tháng văn bản</p>
@@ -126,15 +170,20 @@
                                             <p class="text-center">File đăng tải</p>
                                         </div>
                                         <div class="col-sm-9">
-                                            <div class="input-file-container">  
-                                                <input class="input-file" id="my-file" type="file" name="document_file" accept="">
-                                                <label tabindex="0" for="my-file" class="input-file-trigger">Chọn văn bản</label>
+                                            <div class="input-file-container">
+                                                @if($data->category_id==1)
+                                                    <input class="input-file" id="my-file" type="file" name="document_file1" accept="">
+                                                    <label tabindex="0" for="my-file" class="input-file-trigger">Chọn văn bản</label>
+                                                @else
+                                                    <input class="input-file" id="my-file" type="file" name="document_file" accept="">
+                                                    <label tabindex="0" for="my-file" class="input-file-trigger">Chọn văn bản</label>
+                                                @endif
                                             </div>
                                             <p class="file-return"></p>
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary btn-user btn-block" >
-                                        Đăng Tải
+                                        Chỉnh Sửa
                                     </button>
                                     
                                 </form>
@@ -152,7 +201,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                    <span>Copyright &copy; Phòng điện toán AgriBank Đồng Tháp</span>
                     </div>
                 </div>
             </footer>
@@ -191,7 +240,7 @@
     <!-- Page level custom scripts -->
     <script src="{{asset('js/demo/datatables-demo.js')}}"></script>
     <!-- include jQuery validate library -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="{{asset('js/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js')}}" type="text/javascript"></script>
 
 <script>
 $("#form_post_document").validate({
@@ -250,6 +299,39 @@ $("#form_post_document").validate({
     }
 
 });
+</script>
+<script>
+    document.querySelector("html").classList.add('js');
+
+    var fileInput  = document.querySelector( ".input-file" ),  
+        button     = document.querySelector( ".input-file-trigger" ),
+        the_return = document.querySelector(".file-return");
+        
+    button.addEventListener( "keydown", function( event ) {  
+        if ( event.keyCode == 13 || event.keyCode == 32 ) {  
+            fileInput.focus();  
+        }  
+    });
+    button.addEventListener( "click", function( event ) {
+        fileInput.focus();
+        return false;
+    });  
+    fileInput.addEventListener( "change", function( event ) {  
+        the_return.innerHTML = this.value;  
+    });  
+</script>
+<script>
+    $(document).ready(function(){
+        $('#category_id').change(function(){
+
+            var category_id=$(this).val();
+            if(category_id==1){
+                $("#uploadfile").css("display", "none");
+            }else{
+                $("#uploadfile").css("display", "flex");
+            }
+        })
+    });
 </script>
 </body>
 
